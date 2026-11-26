@@ -2777,10 +2777,16 @@ window.L2={chipURL,betChip,betChipURL,syncChip,paintIcons,repaintAll};
     if(big) [2093,1568,2093].forEach((f,i)=>bellv(f,end+0.35+i*0.12,0.05,o,0.6));
   }catch(e){} };
 
-  // FICHAS (sin magia)
+  // FICHAS (sin magia). La ficha grande usa un sonido grabado (ficha.mp3)
+  const FICHA={buf:null,ac:null,raw:null};
+  fetch("ficha.mp3").then(r=>r.ok?r.arrayBuffer():null).then(b=>{ FICHA.raw=b; }).catch(()=>{});
+  function decodeFicha(){ if(!actx||!FICHA.raw||FICHA.ac===actx) return; FICHA.ac=actx; const cp=FICHA.raw.slice(0);
+    try{ const pr=actx.decodeAudioData(cp,b=>{ FICHA.buf=b; },()=>{}); if(pr&&pr.then) pr.then(b=>{ FICHA.buf=b; }).catch(()=>{}); }catch(e){} }
+  document.addEventListener("pointerdown",()=>setTimeout(decodeFicha,0),{passive:true});
   window.SFX={
     pick(){ if(!on()) return; try{ const o=out(1.5), t=actx.currentTime+0.005; click(t,o,3200,0.35,0.025); click(t+0.035,o,2600,0.18,0.02); }catch(e){} },   // tomar ficha: "tic-tic"
-    place(v){ if(!on()) return; try{ const o=out(0.9), t=actx.currentTime+0.005, n=v>=1000?3:v>=100?2:1;   // poner en la mesa: "clac" de ficha de barro (más fichas, más clacs)
+    place(v){ if(!on()) return; try{ const o=out(0.9), t=actx.currentTime+0.005, n=v>=1000?3:v>=100?2:1;
+      if(n===3 && FICHA.buf && FICHA.ac===actx){ const s=actx.createBufferSource(), g=actx.createGain(); g.gain.value=0.9; s.buffer=FICHA.buf; s.connect(g); g.connect(actx.destination); s.start(t); return; }   // ficha grande: sonido grabado   // poner en la mesa: "clac" de ficha de barro (más fichas, más clacs)
       for(let i=0;i<n;i++){ const at=t+i*0.055; click(at,o,1500+i*250,0.55,0.045); click(at,o,4200,0.12,0.015); }
       const os=actx.createOscillator(), g=actx.createGain(); os.type="sine"; os.frequency.value=180; g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.08); os.connect(g); g.connect(o); os.start(t); os.stop(t+0.1);
     }catch(e){} }
