@@ -1,6 +1,6 @@
 {
-  "name": "Magic Casino · Don Dado",
-  "short_name": "Don Dado",
+  "name": "Magic Casino",
+  "short_name": "Magic Casino",
   "description": "Casino entre amigos: baccarat, ruleta, blackjack, póker y solitario.",
   "start_url": "./",
   "scope": "./",
