@@ -2701,3 +2701,53 @@ window.L2={chipURL,betChip,betChipURL,syncChip,paintIcons,repaintAll};
   });
   window.DD={say,pose,result};
 })();
+
+// ================= v3.1 · sonidos mágicos (turno, ganar y stickers comparten la misma "sala" con eco y destellos) =================
+(function(){
+  let BUS=null;
+  function bus(){ if(!actx) return null; if(BUS&&BUS.ac===actx) return BUS;
+    const ac=actx, len=Math.floor(ac.sampleRate*2.4), ir=ac.createBuffer(2,len,ac.sampleRate);
+    for(let c=0;c<2;c++){ const d=ir.getChannelData(c); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3.4); }
+    const inp=ac.createGain(), dry=ac.createGain(), wet=ac.createGain(), cv=ac.createConvolver(), lp=ac.createBiquadFilter();
+    cv.buffer=ir; dry.gain.value=0.85; wet.gain.value=0.42; lp.type="lowpass"; lp.frequency.value=7000;
+    inp.connect(lp); lp.connect(dry); dry.connect(ac.destination); lp.connect(cv); cv.connect(wet); wet.connect(ac.destination);
+    BUS={ac,inp}; return BUS; }
+  const on=()=>lsGet("mc-bell")!=="off"&&actx;
+  // celesta: tono puro + armónicos brillantes que se apagan rápido (suena a caja de música)
+  function cel(f,at,dur,v,out){ [[1,v],[2,v*.16],[4.01,v*.12],[6.02,v*.05]].forEach(([m,g0],k)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type="sine"; o.frequency.value=f*m;
+      const d=dur/(1+k*1.4); g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(g0,at+0.005); g.gain.exponentialRampToValueAtTime(0.0001,at+d);
+      o.connect(g); g.connect(out); o.start(at); o.stop(at+d+0.05); }); }
+  // destellos: pings agudos al azar, como polvo de hada
+  function sparkle(at,n,span,vol,out){ for(let i=0;i<n;i++){ const s=at+Math.random()*span, f=3000+Math.random()*4200, o=actx.createOscillator(), g=actx.createGain();
+      o.type="sine"; o.frequency.value=f; g.gain.setValueAtTime(0.0001,s); g.gain.exponentialRampToValueAtTime(vol*(0.5+Math.random()*0.5),s+0.003); g.gain.exponentialRampToValueAtTime(0.0001,s+0.16);
+      o.connect(g); g.connect(out); o.start(s); o.stop(s+0.2); } }
+  // "fush" mágico: aire filtrado que sube
+  function whoosh(at,dur,vol,out){ const n=Math.ceil(actx.sampleRate*dur), b=actx.createBuffer(1,n,actx.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1;
+    const s=actx.createBufferSource(); s.buffer=b; const f=actx.createBiquadFilter(); f.type="bandpass"; f.Q.value=2.2; f.frequency.setValueAtTime(700,at); f.frequency.exponentialRampToValueAtTime(6000,at+dur);
+    const g=actx.createGain(); g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(vol,at+dur*0.6); g.gain.exponentialRampToValueAtTime(0.0001,at+dur);
+    s.connect(f); f.connect(g); g.connect(out); s.start(at); s.stop(at+dur+0.02); }
+
+  // te toca: arpa mágica que sube + destellos
+  ding=function(kind){ if(!on()) return; try{ const B=bus(), t=actx.currentTime+0.02;
+    if(kind==="turn"){ [659.3,784,880,1046.5,1318.5,1568].forEach((f,i)=>cel(f,t+i*0.055,1.1,0.17,B.inp)); whoosh(t,0.35,0.05,B.inp); sparkle(t+0.25,6,0.4,0.035,B.inp); }
+    else { cel(1046.5,t,0.8,0.13,B.inp); cel(1568,t+0.11,0.9,0.11,B.inp); sparkle(t+0.1,3,0.25,0.025,B.inp); }
+  }catch(e){} };
+
+  // ganar: hechizo que sube, acorde brillante y lluvia de monedas
+  coins=function(amount){ if(!on()) return; try{ const B=bus(), t=actx.currentTime+0.02, big=amount>=5000;
+    whoosh(t,0.4,0.06,B.inp);
+    const run=big?[523.3,659.3,784,1046.5,1318.5,1568,2093]:[523.3,659.3,784,1046.5,1318.5];
+    run.forEach((f,i)=>cel(f,t+0.05+i*0.06,0.9,0.16,B.inp));
+    const end=t+0.08+run.length*0.06;
+    [1046.5,1318.5,1568,2093].forEach(f=>cel(f,end,big?2.2:1.5,0.09,B.inp));
+    sparkle(end-0.05,big?16:9,big?1.3:0.8,0.04,B.inp);
+    for(let i=0;i<(big?8:4);i++){ const at=end+0.05+i*0.07+Math.random()*0.03; cel(3520+Math.random()*900,at,0.18,0.03,B.inp); }   // monedas
+  }catch(e){} };
+
+  // stickers: el mismo sonido de cada uno, pero sale con un "fush" de magia y por la misma sala con eco
+  reactSound=function(r){ if(!on()) return; try{ const B=bus(); whoosh(actx.currentTime+0.01,0.22,0.045,B.inp); sparkle(actx.currentTime+0.05,3,0.2,0.02,B.inp);
+      if(r.k==="casino"){ coins(5000); return; } reactSfx(actx,r.k,B.inp); }catch(e){} };
+
+  // stickers: precargar y sin filtros apilados (en iPhone a veces no se pintaba la imagen)
+  ["r-jaja.png","r-ctm.png","r-dealer.png","r-faah.png","r-ride.png"].forEach(s=>{ const i=new Image(); i.src=s; if(i.decode) i.decode().catch(()=>{}); });
+})();

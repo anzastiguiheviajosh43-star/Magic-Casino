@@ -581,11 +581,19 @@ body.l2on::before{background:linear-gradient(rgba(11,4,20,.05),rgba(11,4,20,.45)
 .esccoach{border-color:rgba(201,149,58,.6);background:rgba(20,8,36,.6)}
 @media (prefers-reduced-motion:reduce){.v3dd,.seat.turn,#slot2 .sl-frame::before{animation:none}}
 
-/* mesas 3D (fondo pintado: verde BJ/póker, azul baccarat, roja ruleta) */
-#mesa:not([hidden])::before{content:"";position:fixed;top:0;bottom:0;left:50%;width:min(600px,100%);transform:translateX(-50%);z-index:-1;pointer-events:none;
- background:linear-gradient(180deg,#0b0414 0,rgba(11,4,20,.9) 120px,rgba(11,4,20,.35) 230px,transparent 300px),url(mesa-verde.webp) center var(--tblY,165px)/auto calc(100% - 40px) no-repeat,linear-gradient(180deg,#0b0414,#1a0a2e 40%,#120620)}
-#mesa[data-g="pk"]:not([hidden])::before{background-image:linear-gradient(180deg,#0b0414 0,rgba(11,4,20,.9) 120px,rgba(11,4,20,.35) 230px,transparent 300px),url(mesa-azul.webp),linear-gradient(180deg,#0b0414,#1a0a2e 40%,#120620)}
-#mesa[data-g="rul"]:not([hidden])::before{background-image:linear-gradient(180deg,#0b0414 0,rgba(11,4,20,.9) 120px,rgba(11,4,20,.35) 230px,transparent 300px),url(mesa-roja.webp),linear-gradient(180deg,#0b0414,#1a0a2e 40%,#120620)}
+/* mesas 3D: la mesa pintada va pegada al juego y se mueve con las cartas.
+   border-image: la parte de arriba y la de abajo de la mesa no se deforman; sólo el tramo del medio se alarga si hay más contenido */
+html,body{overflow-x:clip}
+#mesa #game{position:relative}
+#mesa #game::before{content:"";position:absolute;z-index:-1;pointer-events:none;left:50%;width:min(100vw,600px);margin-left:calc(min(100vw,600px) / -2);box-sizing:border-box;
+ top:calc(-60px - min(100vw,600px) * .353);bottom:calc(42px - min(100vw,600px) * .594);
+ border-style:solid;border-color:transparent;border-width:calc(min(100vw,600px) * .75) 0 calc(min(100vw,600px) * .594) 0;
+ border-image:url(mesa-verde.webp) 480 0 380 0 fill stretch;
+ -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 110px);mask-image:linear-gradient(180deg,transparent 0,#000 110px)}
+#mesa[data-g="pk"] #game::before{border-image-source:url(mesa-azul.webp)}
+#mesa[data-g="rul"] #game::before{border-image-source:url(mesa-roja.webp)}
+.rbub .e{filter:none!important;transform:translateZ(0)}
+.rbub .rimg{filter:drop-shadow(0 3px 5px rgba(0,0,0,.55))!important}
 #mesa .felt,#mesa[data-g] .felt{background:transparent!important;box-shadow:none!important;border:0!important;margin:0 clamp(18px,9vw,60px)}
 
 /* lobby: arreglos */
