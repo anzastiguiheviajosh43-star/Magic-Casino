@@ -93,7 +93,7 @@ const BAC = {
     }
     g.P=Pc; g.B=Bc; g.res=res; g.pt=pt; g.bt=bt;
     g.hist=(g.hist+res).slice(-120); g.phase="result";
-    g.nextAt=now()+ (Pc.length+Bc.length)*330 + 4500;
+    g.nextAt=now()+ (Pc.length+Bc.length)*450 + 6000;
     addLog(T, res==="T" ? `Baccarat: empate ${pt} a ${bt}` : `Baccarat: gana ${res==="P"?"Jugador":"Banca"} ${Math.max(pt,bt)} a ${Math.min(pt,bt)}`);
   },
   next(T){ const g=T.g; g.round++; g.phase="bet"; g.bets={}; g.ready={}; g.P=[]; g.B=[]; g.res=null; g.net={}; delete g.nextAt; },
@@ -127,7 +127,7 @@ const RUL = {
       let back=0; for(const [k,a] of Object.entries(b)) back+=a*rulMult(k,n);
       const net=r2(back-sumObj(b)); p.chips=r2(p.chips+net); g.net[id]=net;
     }
-    g.num=n; g.hist=[n].concat(g.hist||[]).slice(0,24); g.phase="result"; g.nextAt=now()+8500;
+    g.num=n; g.hist=[n].concat(g.hist||[]).slice(0,24); g.phase="result"; g.nextAt=now()+11000;
     addLog(T, `Ruleta: salió ${n}${n===0?"":REDS.has(n)?" rojo":" negro"}`);
   },
   next(T){ const g=T.g; g.round++; g.phase="bet"; g.bets={}; g.ready={}; g.num=null; g.net={}; delete g.nextAt; },
@@ -183,7 +183,7 @@ const BJ = {
       }
       if(p) p.chips=r2(p.chips+net); g.net[id]=net;
     }
-    g.phase="result"; g.nextAt=now()+ g.dealer.length*400 + 5200;
+    g.phase="result"; g.nextAt=now()+ g.dealer.length*450 + 6500;
     addLog(T, g.dbj ? "Blackjack: el crupier tiene blackjack" : `Blackjack: crupier ${d>21?"se pasa con "+d:"con "+d}`);
   },
   move(T,uid,d){
@@ -995,7 +995,7 @@ function placeBet(k){
   const T=ST.T, p=me(); if(!p||T.g.phase!=="bet") return;
   const a=UI.chip, av=avail();
   if(a>av+0.001){ toast(av>0?`Solo tienes ${fmt(av)} libres`:"No te quedan fichas libres"); return; }
-  UI.bets[k]=r2((UI.bets[k]||0)+a); UI.stack.push([k,a]); UI.ready=false; pushBets(); render();
+  if(window.SFX) SFX.place(a); UI.bets[k]=r2((UI.bets[k]||0)+a); UI.stack.push([k,a]); UI.ready=false; pushBets(); render();
 }
 function undoBet(){ const x=UI.stack.pop(); if(!x) return; UI.bets[x[0]]=r2(UI.bets[x[0]]-x[1]); if(UI.bets[x[0]]<=0) delete UI.bets[x[0]]; UI.ready=false; pushBets(); render(); }
 function clearBets(){ UI.bets={}; UI.stack=[]; UI.ready=false; pushBets(); render(); }
@@ -1013,10 +1013,10 @@ function cardsHTML(key,cards,o){
     const hidden = c==="??" || (o.hide && o.hide(i));
     const id=key+":"+i+":"+(hidden?"??":c);
     let at=UI.cardAt.get(id);
-    if(at===undefined){ at = UI.first ? 0 : t + (o.ord ? (UI.qn+o.ord(i)) : UI.qn++)*330; UI.cardAt.set(id,at); }
+    if(at===undefined){ at = UI.first ? 0 : t + (o.ord ? (UI.qn+o.ord(i)) : UI.qn++)*450; UI.cardAt.set(id,at); }
     const cls=(o.sm?" sm":"")+(o.side&&o.side(i)?" side":"")+(o.dim?" dim":"");
     if(at>t){ UI.wake = UI.wake ? Math.min(UI.wake,at) : at; h+=`<div class="slot ghost${o.sm?" sm":""}"></div>`; return; } // aún no sale: lugar vacío
-    const anim = t-at<380 ? ` new" style="--d:${((at-t)/1000).toFixed(2)}s` : "";
+    const anim = t-at<520 ? ` new" style="--d:${((at-t)/1000).toFixed(2)}s` : "";
     if(hidden) h+=`<div class="card back${cls}${anim}"></div>`;
     else { const r=c[0]==="T"?"10":c[0], s=c[1]; h+=`<div class="card${s==="H"||s==="D"?" r":""}${cls}${anim}"><span class="rk">${r}</span><span class="st">${SUITCH[s]}</span></div>`; }
   });
@@ -1026,7 +1026,7 @@ function cardsHTML(key,cards,o){
 }
 // Tiempo que falta para mostrar un resultado (después de que salgan las cartas)
 function revealIn(key,extra){
-  if(UI.hold[key]===undefined){ UI.hold[key] = UI.first ? 0 : now() + UI.qn*330 + (extra||350); if(ST.T) diag("res",{k:key,lag:now()-(ST.T.updated||0),first:UI.first,anim:UI.qn}); }
+  if(UI.hold[key]===undefined){ UI.hold[key] = UI.first ? 0 : now() + UI.qn*450 + (extra||350); if(ST.T) diag("res",{k:key,lag:now()-(ST.T.updated||0),first:UI.first,anim:UI.qn}); }
   const ms=UI.hold[key]-now();
   if(ms>0){ clearTimeout(revealIn.t); revealIn.t=setTimeout(render, ms+30); }
   return Math.max(0,ms);
@@ -1323,15 +1323,15 @@ function renderRul(T,g){
   let ms=0;
   if(res){
     const key="rul:"+gk(g)+g.round;
-    if(UI.hold[key]===undefined) UI.hold[key] = UI.first ? 0 : now()+3400;
+    if(UI.hold[key]===undefined) UI.hold[key] = UI.first ? 0 : now()+5800;
     ms=Math.max(0,UI.hold[key]-now());
     if(UI.wheelRound!==key){
       UI.wheelRound=key;
       const i=WHEEL.indexOf(g.num), target=-i*360/37, cur=UI.wheelRot;
       const delta=(((target-cur)%360)+360)%360;
-      UI.wheelRot = cur + (ms>0?1800:0) + delta;
+      UI.wheelRot = cur + (ms>0?2880:0) + delta;
       const cv=$("wheelCv");
-      spinWheel(cv, cur, UI.wheelRot, ms>0 ? 3200 : 0);
+      spinWheel(cv, cur, UI.wheelRot, ms>0 ? 5600 : 0);
     }
     if(ms>0){ clearTimeout(renderRul.t); renderRul.t=setTimeout(render, ms+30); }
   }
@@ -1467,7 +1467,7 @@ function renderPk(T,g){
 // ---------------- Eventos ----------------
 $("game").addEventListener("click",e=>{ const b=e.target.closest("[data-bet]"); if(b&&!b.disabled) placeBet(b.dataset.bet); });
 $("controls").addEventListener("click",e=>{
-  const c=e.target.closest("[data-chip]"); if(c){ UI.chip=+c.dataset.chip; lsSet("mc-chip",UI.chip); render(); return; }
+  const c=e.target.closest("[data-chip]"); if(c){ if(window.SFX) SFX.pick(); UI.chip=+c.dataset.chip; lsSet("mc-chip",UI.chip); render(); return; }
   const m=e.target.closest("[data-move]"); if(m&&!m.disabled){ doMove(m.dataset.move); return; }
   const t=e.target.closest("[data-to]"); if(t){ const i=$("raiseIn"); if(i) i.value=t.dataset.to; return; }
   const a=e.target.closest("[data-act]"); if(!a||a.disabled) return;
@@ -2641,12 +2641,19 @@ window.L2={chipURL,betChip,betChipURL,syncChip,paintIcons,repaintAll};
   function after(){
     const T=ST.T; if(!T) return; ensure();
     $v("mesa").dataset.g=T.game;
+    { const gm=$v("game"), ph=(T.g&&T.g.phase)||""; if(gm){ const prev=gm.dataset.ph; gm.dataset.ph=ph;
+        if(prev==="bet" && ph && ph!=="bet"){ const dl=$v("ddTable")||gm; setTimeout(()=>{ const y=dl.getBoundingClientRect().top+scrollY-150; if(Math.abs(y-scrollY)>40) scrollTo({top:Math.max(0,y),behavior:"smooth"}); },60); } } }
     const g=T.g||{}, uid=ST.uid, p=T.players&&T.players[uid], nm=p?p.name:"";
     const rnd=T.game+":"+(g.round!=null?g.round:g.hand);
     // 1) resultado de la ronda
     const done = T.game==="pk" ? (g.phase==="show"||!!g.show) : g.phase==="result";
     if(done && p && resKey!==rnd){
       resKey=rnd;
+      const hk = T.game==="pk" ? null : (T.game+":"+gk(g)+g.round), hold = hk&&UI.hold[hk]!==undefined ? Math.max(0,UI.hold[hk]-now()) : (T.game==="pk"?1200:0);
+      setTimeout(()=>{ const T2=ST.T; if(!T2||T2.game!==T.game||(T2.game+":"+(T2.g.round!=null?T2.g.round:T2.g.hand))!==rnd) return; showRes(T2,T2.g,uid,nm); }, hold+1000);
+      return;
+    }
+    function showRes(T,g,uid,nm){
       if(T.game==="pk"){
         const won=(g.won&&g.won[uid])||0, inHand=g.ps&&g.ps[uid];
         if(won>0){ result("¡Ganaste el bote!",money(won),pick(L.win,nm),"festeja"); say(pick(L.win,nm),3600,"festeja"); }
@@ -2662,7 +2669,6 @@ window.L2={chipURL,betChip,betChipURL,syncChip,paintIcons,repaintAll};
           else { say(pick(L.push,nm),2800,"shrug"); }
         }
       }
-      return;
     }
     // 2) te toca
     const myTurn=(T.game==="bj"&&g.phase==="play"&&g.turn&&g.turn.id===uid)||(T.game==="pk"&&g.toAct===uid&&["pre","flop","turn","river"].includes(g.phase));
@@ -2733,21 +2739,50 @@ window.L2={chipURL,betChip,betChipURL,syncChip,paintIcons,repaintAll};
     else { cel(1046.5,t,0.8,0.13,B.inp); cel(1568,t+0.11,0.9,0.11,B.inp); sparkle(t+0.1,3,0.25,0.025,B.inp); }
   }catch(e){} };
 
-  // ganar: hechizo que sube, acorde brillante y lluvia de monedas
-  coins=function(amount){ if(!on()) return; try{ const B=bus(), t=actx.currentTime+0.02, big=amount>=5000;
-    whoosh(t,0.4,0.06,B.inp);
-    const run=big?[523.3,659.3,784,1046.5,1318.5,1568,2093]:[523.3,659.3,784,1046.5,1318.5];
-    run.forEach((f,i)=>cel(f,t+0.05+i*0.06,0.9,0.16,B.inp));
-    const end=t+0.08+run.length*0.06;
-    [1046.5,1318.5,1568,2093].forEach(f=>cel(f,end,big?2.2:1.5,0.09,B.inp));
-    sparkle(end-0.05,big?16:9,big?1.3:0.8,0.04,B.inp);
-    for(let i=0;i<(big?8:4);i++){ const at=end+0.05+i*0.07+Math.random()*0.03; cel(3520+Math.random()*900,at,0.18,0.03,B.inp); }   // monedas
-  }catch(e){} };
-
-  // stickers: el mismo sonido de cada uno, pero sale con un "fush" de magia y por la misma sala con eco
-  reactSound=function(r){ if(!on()) return; try{ const B=bus(); whoosh(actx.currentTime+0.01,0.22,0.045,B.inp); sparkle(actx.currentTime+0.05,3,0.2,0.02,B.inp);
-      if(r.k==="casino"){ coins(5000); return; } reactSfx(actx,r.k,B.inp); }catch(e){} };
-
   // stickers: precargar y sin filtros apilados (en iPhone a veces no se pintaba la imagen)
   ["r-jaja.png","r-ctm.png","r-dealer.png","r-faah.png","r-ride.png"].forEach(s=>{ const i=new Image(); i.src=s; if(i.decode) i.decode().catch(()=>{}); });
+})();
+
+// ================= v3.2 · sonidos mágicos sin eco (ganar y stickers) + fichas =================
+(function(){
+  const on=()=>lsGet("mc-bell")!=="off"&&actx;
+  // salida limpia: sin eco, un filtro suave para que nada chille
+  function out(vol){ const g=actx.createGain(); g.gain.value=vol||1; const lp=actx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=5200; lp.Q.value=0.4; g.connect(lp); lp.connect(actx.destination); return g; }
+  // arpa: pulsada, cálida y corta
+  function harp(f,at,v,o,dur){ dur=dur||0.9; [["triangle",1,v],["sine",2,v*0.25]].forEach(([ty,m,g0])=>{ const os=actx.createOscillator(), g=actx.createGain(); os.type=ty; os.frequency.value=f*m;
+      g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(g0,at+0.004); g.gain.exponentialRampToValueAtTime(0.0001,at+dur/m); os.connect(g); g.connect(o); os.start(at); os.stop(at+dur+0.05); }); }
+  // campana suave tipo caja de música (sin armónicos agudos)
+  function bellv(f,at,v,o,dur){ dur=dur||1.2; [[1,v],[2.76,v*0.12]].forEach(([m,g0],k)=>{ const os=actx.createOscillator(), g=actx.createGain(); os.type="sine"; os.frequency.value=f*m;
+      g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(g0,at+0.006); g.gain.exponentialRampToValueAtTime(0.0001,at+dur/(1+k*2)); os.connect(g); g.connect(o); os.start(at); os.stop(at+dur+0.05); }); }
+  // voz "mágica": tono con vibrato y ataque suave (para imitar las voces de los stickers)
+  function voice(f1,f2,at,dur,v,o,vib){ const os=actx.createOscillator(), os2=actx.createOscillator(), g=actx.createGain(), lfo=actx.createOscillator(), lg=actx.createGain();
+    os.type="sine"; os2.type="triangle"; os.frequency.setValueAtTime(f1,at); os2.frequency.setValueAtTime(f1*1.004,at);
+    if(f2){ os.frequency.exponentialRampToValueAtTime(f2,at+dur); os2.frequency.exponentialRampToValueAtTime(f2*1.004,at+dur); }
+    lfo.frequency.value=vib||5.5; lg.gain.value=f1*0.018; lfo.connect(lg); lg.connect(os.frequency); lg.connect(os2.frequency);
+    g.gain.setValueAtTime(0.0001,at); g.gain.exponentialRampToValueAtTime(v,at+0.04); g.gain.setValueAtTime(v,at+dur*0.7); g.gain.exponentialRampToValueAtTime(0.0001,at+dur);
+    const g2=actx.createGain(); g2.gain.value=0.45; os.connect(g); os2.connect(g2); g2.connect(g); g.connect(o);
+    [os,os2,lfo].forEach(x=>{ x.start(at); x.stop(at+dur+0.05); }); }
+  function thud(at,o,vol){ const os=actx.createOscillator(), g=actx.createGain(); os.type="sine"; os.frequency.setValueAtTime(140,at); os.frequency.exponentialRampToValueAtTime(45,at+0.25);
+    g.gain.setValueAtTime(vol,at); g.gain.exponentialRampToValueAtTime(0.0001,at+0.28); os.connect(g); g.connect(o); os.start(at); os.stop(at+0.3); }
+  function click(at,o,freq,vol,dur){ const n=Math.ceil(actx.sampleRate*(dur||0.03)), b=actx.createBuffer(1,n,actx.sampleRate), d=b.getChannelData(0); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,4);
+    const s=actx.createBufferSource(); s.buffer=b; const f=actx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=freq; f.Q.value=1.4; const g=actx.createGain(); g.gain.value=vol;
+    s.connect(f); f.connect(g); g.connect(o); s.start(at); }
+
+  // GANAR: arpa que sube y cierra con campanitas (más larga si ganas mucho)
+  coins=function(amount){ if(!on()) return; try{ const o=out(0.9), t=actx.currentTime+0.02, big=amount>=5000;
+    const run=big?[392,523.3,659.3,784,1046.5,1318.5]:[523.3,659.3,784,1046.5];
+    run.forEach((f,i)=>harp(f,t+i*0.07,0.22,o));
+    const end=t+run.length*0.07+0.04;
+    [1046.5,1318.5,1568].forEach((f,i)=>bellv(f,end+i*0.012,0.08,o,big?1.8:1.3));
+    if(big) [2093,1568,2093].forEach((f,i)=>bellv(f,end+0.35+i*0.12,0.05,o,0.6));
+  }catch(e){} };
+
+  // FICHAS (sin magia)
+  window.SFX={
+    pick(){ if(!on()) return; try{ const o=out(1.5), t=actx.currentTime+0.005; click(t,o,3200,0.35,0.025); click(t+0.035,o,2600,0.18,0.02); }catch(e){} },   // tomar ficha: "tic-tic"
+    place(v){ if(!on()) return; try{ const o=out(0.9), t=actx.currentTime+0.005, n=v>=1000?3:v>=100?2:1;   // poner en la mesa: "clac" de ficha de barro (más fichas, más clacs)
+      for(let i=0;i<n;i++){ const at=t+i*0.055; click(at,o,1500+i*250,0.55,0.045); click(at,o,4200,0.12,0.015); }
+      const os=actx.createOscillator(), g=actx.createGain(); os.type="sine"; os.frequency.value=180; g.gain.setValueAtTime(0.12,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.08); os.connect(g); g.connect(o); os.start(t); os.stop(t+0.1);
+    }catch(e){} }
+  };
 })();

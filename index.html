@@ -607,6 +607,16 @@ img.l2ci,canvas.pix{image-rendering:auto}
 .l2name.v3ask{border-radius:10px;animation:v3ask 1.4s ease-in-out infinite}
 @keyframes v3ask{0%,100%{box-shadow:0 0 0 0 rgba(255,207,87,0)}50%{box-shadow:0 0 0 3px rgba(255,207,87,.75),0 0 16px rgba(255,207,87,.5)}}
 @media (prefers-reduced-motion:reduce){.l2name.v3ask{animation:none;box-shadow:0 0 0 2px #ffcf57}}
+
+/* apuestas primero: mientras se apuesta no se muestran los lugares vacíos de cartas */
+#game[data-ph="bet"] .bj-dealer,#game[data-ph="bet"] .bac-tbl,#game[data-ph="bet"] .rul-top .wheel{display:none}
+#game[data-ph="bet"] .rul-top{grid-template-columns:1fr;justify-items:center;text-align:center}
+#game[data-ph="bet"] .betcircle{margin-top:4px}
+/* reparto: la carta sale del crupier, gira y cae en su lugar */
+.card.new{animation:deal2 .5s cubic-bezier(.2,.8,.25,1) both;animation-delay:var(--d,0s)}
+.card.side.new{animation-name:dealside}
+@keyframes deal2{0%{opacity:0;transform:translate(0,-120px) rotate(-14deg) scale(.6)}60%{opacity:1}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.card.new{animation-name:fadein}}
 </style>
 
 <div id="l2bgimg" aria-hidden="true"></div><canvas id="l2bg" aria-hidden="true"></canvas>
