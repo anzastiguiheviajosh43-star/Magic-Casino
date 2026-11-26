@@ -1978,11 +1978,12 @@ const keyOf=n=>normName(n).replace(/[\/.#$\[\]~]/g,"_").slice(0,40)||"_";
 const FICHAS={}; const URLC={};
 function defCfg(name,seat){ const n=normName(name); let h=0; for(const ch of n) h=(h*31+ch.charCodeAt(0))>>>0;
   const base=seat!==undefined&&seat!==null&&!n ? DEFC[seat%DEFC.length] : DEFC[h%DEFC.length];
-  return {base,edge:"#f1ede2",pat:"clasica",mid:shade(base,0.85),em:"inicial",emc:"#fff"}; }
+  if(!n||n==="?") return {base:"#6c2bd9",edge:"#ffcf57",pat:"clasica",mid:"#4a1c9e",em:"inicial",emc:"#ffd98a"};
+  return {base,edge:"#ffcf57",pat:"clasica",mid:shade(base,0.85),em:"inicial",emc:"#fff"}; }
 const okCfg=c=>c&&typeof c==="object"&&typeof c.base==="string"&&typeof c.edge==="string";
 function cfgOf(name,seat){ const mine=normName(name)===normName(getAlias()) && myCfg(); const c=fixEm([mine,FICHAS[keyOf(name)]].find(okCfg)||defCfg(name,seat));
   return Object.assign({},c,{ini:(String(name||"?").trim()[0]||"?").toUpperCase()}); }
-function chipURL(name,seat){ try{ const c=cfgOf(name,seat); const k=JSON.stringify(c); if(!URLC[k]) URLC[k]=chipCanvas(c,40).toDataURL(); return URLC[k]; }catch(e){ return chipCanvas(defCfg(name,seat),40).toDataURL(); } }
+function chipURL(name,seat){ try{ const c=cfgOf(name,seat); const k=JSON.stringify(c); if(!URLC[k]) URLC[k]=chipCanvas(c,96).toDataURL(); return URLC[k]; }catch(e){ return chipCanvas(defCfg(name,seat),96).toDataURL(); } }
 (function(){ try{ const v=JSON.parse(lsGet("mc-chip")||"null"); if(v && typeof v==="object"){ lsSet("mc-ficha",JSON.stringify(v)); lsSet("mc-chip","100"); } }catch(e){} })();   // versión anterior: mismo lugar
 function betChip(v){ let base=myCfg(); if(!okCfg(base)) base=cfgOf(getAlias()||"?");
   const c=Object.assign({},base,{em:"vacio"}); const k="bet:"+JSON.stringify(c);
@@ -2675,7 +2676,11 @@ window.L2={chipURL,betChip,betChipURL,syncChip,paintIcons,repaintAll};
   const _ri=renderInner;
   renderInner=function(){ _ri(); try{ after(); }catch(e){ console.error(e); } };
   // ---- saludo del lobby
-  function hello(){ const t=$v("ddHelloT"); if(t){ const n=(typeof getAlias==="function"&&getAlias())||""; t.textContent=pick(L.hello,n||"amigo"); } }
+  function hello(){ const t=$v("ddHelloT"); if(!t) return; const n=(typeof getAlias==="function"&&getAlias())||"";
+    if(!n){ t.textContent="¡Bienvenido! ¿Cómo te llamo? Escribe tu apodo aquí abajo."; const a=$v("alias"), box=a&&a.closest(".l2name");
+      if(box){ box.classList.add("v3ask"); a.addEventListener("input",()=>box.classList.remove("v3ask"),{once:true}); a.addEventListener("change",()=>{ const m=getAlias(); if(m) t.textContent=`¡Mucho gusto, ${m}! Ahora sí, que ruede el dado.`; },{once:true}); setTimeout(()=>{ try{ a.focus({preventScroll:true}); }catch(e){} },900); }
+      return; }
+    t.textContent=pick(L.hello,n); }
   setTimeout(hello,600);
   // ---- palanca de la tragamonedas
   const lever=$v("s2Lever"), rand=$v("s2Rand");

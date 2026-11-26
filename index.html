@@ -12,7 +12,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
-<title>Mesa de Cuatro</title>
+<title>Magic Casino</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Cinzel:wght@700;900&family=Cinzel+Decorative:wght@900&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Silkscreen:wght@400;700&display=swap">
 <style>
 /* Layout: una columna tipo mesa de casino — barra de mesa, 4 asientos, paño del juego, controles abajo */
@@ -580,6 +580,25 @@ body.l2on::before{background:linear-gradient(rgba(11,4,20,.05),rgba(11,4,20,.45)
 .v3coach div{flex:1;margin-bottom:12px;padding:8px 11px;border-radius:16px 16px 16px 4px;background:linear-gradient(180deg,#fff8e6,#f1e3c2);border:2px solid var(--goldline);color:#2a1406;font:600 .86rem/1.25 var(--ui)}
 .esccoach{border-color:rgba(201,149,58,.6);background:rgba(20,8,36,.6)}
 @media (prefers-reduced-motion:reduce){.v3dd,.seat.turn,#slot2 .sl-frame::before{animation:none}}
+
+/* mesas 3D (fondo pintado: verde BJ/póker, azul baccarat, roja ruleta) */
+#mesa:not([hidden])::before{content:"";position:fixed;top:0;bottom:0;left:50%;width:min(600px,100%);transform:translateX(-50%);z-index:-1;pointer-events:none;
+ background:linear-gradient(180deg,#0b0414 0,rgba(11,4,20,.9) 120px,rgba(11,4,20,.35) 230px,transparent 300px),url(mesa-verde.webp) center var(--tblY,165px)/auto calc(100% - 40px) no-repeat,linear-gradient(180deg,#0b0414,#1a0a2e 40%,#120620)}
+#mesa[data-g="pk"]:not([hidden])::before{background-image:linear-gradient(180deg,#0b0414 0,rgba(11,4,20,.9) 120px,rgba(11,4,20,.35) 230px,transparent 300px),url(mesa-azul.webp),linear-gradient(180deg,#0b0414,#1a0a2e 40%,#120620)}
+#mesa[data-g="rul"]:not([hidden])::before{background-image:linear-gradient(180deg,#0b0414 0,rgba(11,4,20,.9) 120px,rgba(11,4,20,.35) 230px,transparent 300px),url(mesa-roja.webp),linear-gradient(180deg,#0b0414,#1a0a2e 40%,#120620)}
+#mesa .felt,#mesa[data-g] .felt{background:transparent!important;box-shadow:none!important;border:0!important;margin:0 clamp(18px,9vw,60px)}
+
+/* lobby: arreglos */
+.v3hero{height:318px}
+.v3brand{top:48px}
+.v3hbub{bottom:34px}
+.l2name input{font:700 1.45rem var(--ui);letter-spacing:.01em}
+.l2name input::placeholder{color:rgba(246,239,224,.45)}
+.l2rank{font:600 .82rem var(--ui);letter-spacing:.02em;color:#ffd98a}
+img.l2ci,canvas.pix{image-rendering:auto}
+.l2name.v3ask{border-radius:10px;animation:v3ask 1.4s ease-in-out infinite}
+@keyframes v3ask{0%,100%{box-shadow:0 0 0 0 rgba(255,207,87,0)}50%{box-shadow:0 0 0 3px rgba(255,207,87,.75),0 0 16px rgba(255,207,87,.5)}}
+@media (prefers-reduced-motion:reduce){.l2name.v3ask{animation:none;box-shadow:0 0 0 2px #ffcf57}}
 </style>
 
 <div id="l2bgimg" aria-hidden="true"></div><canvas id="l2bg" aria-hidden="true"></canvas>
@@ -593,7 +612,7 @@ body.l2on::before{background:linear-gradient(rgba(11,4,20,.05),rgba(11,4,20,.45)
     <div class="v3hero" id="v3hero">
       <div class="v3city" aria-hidden="true"></div>
       <div class="v3top"><button class="v3rnd" id="gearBtn" aria-label="Ajustes"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M5.2 18.8l2.1-2.1M16.7 7.3l2.1-2.1"/></svg></button></div>
-      <div class="v3brand"><svg class="v3crown" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 18 4 7l5 5 3-7 3 7 5-5 2 11z"/></svg><b class="v3title">MESA DE<br>CUATRO</b><span class="v3sub">Casino entre amigos</span></div>
+      <div class="v3brand"><svg class="v3crown" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 18 4 7l5 5 3-7 3 7 5-5 2 11z"/></svg><b class="v3title">MAGIC<br>CASINO</b><span class="v3sub">Casino entre amigos</span></div>
       <img class="v3dd" src="dd-normal.webp" alt="Don Dado, el crupier">
       <div class="v3hbub" id="ddHello"><b>DON DADO</b><span id="ddHelloT">¡Bienvenido! La casa abre cuando tú digas.</span></div>
     </div>
